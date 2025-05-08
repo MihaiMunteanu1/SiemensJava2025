@@ -22,14 +22,6 @@ public class ServiceTest {
     @Autowired
     private ItemService itemService;
 
-    @Test
-    void serviceTest() throws Exception {
-        testProcessItemsAsync();
-        testFindAll();
-        testFindById();
-        testDeleteById();
-        testSave();
-    }
 
     @BeforeEach
     void setup() {
@@ -86,6 +78,7 @@ public class ServiceTest {
         CompletableFuture<List<Item>> future = itemService.processItemsAsync();
         List<Item> processedItems = future.get();
 
+        // checking if all items are processed
         assertEquals(2, processedItems.size());
         assertTrue(processedItems.stream().allMatch(item -> "PROCESSED".equals(item.getStatus())));
     }

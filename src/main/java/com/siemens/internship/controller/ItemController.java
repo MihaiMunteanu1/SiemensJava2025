@@ -28,16 +28,17 @@ public class ItemController {
     @PostMapping
     public ResponseEntity<Item> createItem(@Valid @RequestBody Item item, BindingResult result) {
         if (result.hasErrors()) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); // it was CREATED before
+            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); // it was 'CREATED' before
+
         }
-        return new ResponseEntity<>(itemService.save(item), HttpStatus.CREATED); // it was BAD_REQUEST before
+        return new ResponseEntity<>(itemService.save(item), HttpStatus.CREATED); // it was 'BAD_REQUEST' before
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Item> getItemById(@PathVariable Long id) {
         return itemService.findById(id)
                 .map(item -> new ResponseEntity<>(item, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // it was NO_CONTENT before
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // it was 'NO_CONTENT' before
     }
 
     @PutMapping("/{id}")

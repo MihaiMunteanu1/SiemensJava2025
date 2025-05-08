@@ -41,6 +41,13 @@ public class ItemService {
     }
 
     public Item save(Item item) {
+        // validating email
+        try {
+            emailValidator.validate(item.getEmail());
+        } catch (ValidationException e) {
+            System.out.println("Invalid email: " + e.getMessage());
+            return null;
+        }
         return itemRepository.save(item);
     }
 
@@ -69,13 +76,12 @@ public class ItemService {
      */
     @Async
     public CompletableFuture<List<Item>> processItemsAsync() {
-        // Using a thread-safe collection for processed items
+        // using a thread-safe collection for processed items
         List<Item> processedItems = new CopyOnWriteArrayList<>();
 
-        // Fetching all item IDs
         List<Long> itemIds = itemRepository.findAllIds();
 
-        // Creating a list of CompletableFutures for processing items
+        // creating a list of CompletableFutures for processing items
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Long id : itemIds) {
@@ -83,14 +89,14 @@ public class ItemService {
                 try {
                     Item item = itemRepository.findById(id).orElse(null);
                     if (item != null) {
-                        // Validating email
+                        // validating email
                         emailValidator.validate(item.getEmail());
 
-                        // Updating item status and saving
+                        // updating item status and saving
                         item.setStatus("PROCESSED");
                         itemRepository.save(item);
 
-                        // Adding to the thread-safe list and incrementing the counter
+                        // adding to the thread-safe list and incrementing the counter
                         processedItems.add(item);
                         processedCount.incrementAndGet();
                     } else {
@@ -105,7 +111,7 @@ public class ItemService {
             futures.add(future);
         }
 
-        // Waiting for all tasks to complete and returning the processed items
+        // waiting for all tasks to complete and returning the processed items
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenApply(v -> processedItems)
                 .exceptionally(ex -> {
@@ -113,57 +119,5 @@ public class ItemService {
                     throw new CompletionException(ex);
                 });
     }
-//    @Async
-//    public CompletableFuture<List<Item>> processItemsAsync() {
-//
-//        // using a thread-safe collection for processed items
-//        List<Item> threadSafeProcessedItems = new CopyOnWriteArrayList<>();
-//
-//        // creating a list of CompletableFutures for processing items
-//        List<CompletableFuture<Void>> futures = new ArrayList<>();
-//
-//
-//        List<Long> itemIds = itemRepository.findAllIds();
-//
-//        for (Long id : itemIds) {
-//            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-//                try {
-//                    Thread.sleep(100);
-//
-//                    Item item = itemRepository.findById(id).orElse(null);
-//                    if (item != null) {
-//                        // validating email using the EmailValidator
-//                        try {
-//                            emailValidator.validate(item.getEmail());
-//                        } catch (ValidationException e) {
-//                            System.out.println("Invalid email for item with id: " + item.getId() + ": " + e.getMessage());
-//                            return; // skip processing this item
-//                        }
-//                        item.setStatus("PROCESSED");
-//                        itemRepository.save(item);
-//                        processedItems.add(item);
-//                        processedCount.incrementAndGet();
-//
-//                    } else {
-//                        System.out.println("Item with id: " + id + " not found.");
-//                        return; // skip processing if item is not found
-//                    }
-//
-//                } catch (InterruptedException e) {
-//                    System.out.println("Error: " + e.getMessage());
-//                }
-//            }, executor);
-//            futures.add(future);
-//        }
-//
-//        // waiting for all tasks to complete and return the processed items
-//        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-//                .thenApply(v -> threadSafeProcessedItems)
-//                .exceptionally(ex -> {
-//                    System.err.println("Error during processing: " + ex.getMessage());
-//                    throw new CompletionException(ex);
-//                });
-//    }
-
 }
 
