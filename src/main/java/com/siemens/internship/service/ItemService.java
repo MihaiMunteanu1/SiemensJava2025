@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ItemService {
     @Autowired
     private ItemRepository itemRepository;
+
     private static ExecutorService executor = Executors.newFixedThreadPool(10);
     private List<Item> processedItems = new ArrayList<>();
 
